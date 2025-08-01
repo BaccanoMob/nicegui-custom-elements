@@ -1,4 +1,4 @@
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, is_dataclass
 from typing import Literal
 
 from nicegui import ui
@@ -63,6 +63,9 @@ class AGGrid(ui.aggrid):
     async def update_row_data(self, rowData):
         await self.run_grid_method("setGridOption", "rowData", rowData)
 
+    async def deselect_selection(self):
+        await self.run_grid_method("deselectAll")
+
     async def update_new_order(self):
         await self.update_row_data(await self.get_client_data())
 
@@ -71,7 +74,6 @@ class AGGrid(ui.aggrid):
 
     def __init__(
         self,
-        # options: dict,
         rowData: list,
         *,
         columnDefs: list[AGColDef] | None = None,
@@ -98,6 +100,14 @@ class AGGrid(ui.aggrid):
             theme (str | None, optional): AG Grid theme. Defaults to "balham".
             auto_size_columns (bool, optional): whether to automatically resize columns to fit the grid width. Defaults to True.
         """
+        if len(rowData) == 0 and columnDefs is None:
+            raise ValueError(
+                "rowData and columnDef both can not be empty at the same time."
+            )
+
+        if len(rowData) != 0 and is_dataclass(rowData[0]):
+            rowData = [asdict(row) for row in rowData]
+
         if columnDefs is None:
             columnDefs = [AGColDef(field=col) for col in rowData[0].keys()]
 
@@ -107,10 +117,16 @@ class AGGrid(ui.aggrid):
             "stopEditingWhenCellsLoseFocus": True,
         }
 
+        selection = (
+            "multiple"
+            if any(colDef.headerCheckboxSelection for colDef in columnDefs)
+            else selection
+        )
+        # selected to `multiple` if headerCheṭckboxSelection is True for one column
+
         if selection in ("multiple", "single"):
             options["rowSelection"] = selection
             # auto selected to `single` if checkboxSelection is True for one column
-            # auto selected to `multiple` if headerCheṭckboxSelection is True for one column
 
         if drag == "single":
             options["rowDragManaged"] = True
