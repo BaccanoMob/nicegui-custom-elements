@@ -1,4 +1,4 @@
-from nicegui import ui
+from nicegui import run, ui
 from nicegui.elements.spinner import SpinnerTypes
 
 
@@ -20,7 +20,7 @@ class LoadingSpinnerModal(ui.dialog):
         loading_modal is the name of the variable of this class instance.
 
 
-        Some good looking spinners: audio, bars, box, dots, hourglass, puff.
+        Some good looking spinners: audio, bars, box, dots, hourglass, puff
 
         Args:
             spinner_type (SpinnerTypes, optional): Type of spinner. Defaults to "default".
@@ -48,9 +48,28 @@ class LoadingSpinnerModal(ui.dialog):
             async_function (optional): Async function (should not be called) with its arguments passed as kwargs. Defaults to None.
 
         """
-        self.open()
+        result = None
 
+        self.open()
         if async_function is not None:
-            await async_function(**kwargs)
-        
+            result = await async_function(**kwargs)
         self.close()
+
+        return result
+
+    async def loading_while2(self, non_async_function=None, **kwargs):
+        """Function to start and stop loading screen for the duratin of a function.
+
+        Args:
+            async_function (optional): Async function (should not be called) with its arguments passed as kwargs. Defaults to None.
+
+            Example: `lambda e: loadingDialog.loading_while(asyncio.sleep, delay=15)` where delay is a parameter for sleep
+        """
+        result = None
+
+        self.open()
+        if non_async_function is not None:
+            result = await run.io_bound(non_async_function, **kwargs)
+        self.close()
+
+        return result
