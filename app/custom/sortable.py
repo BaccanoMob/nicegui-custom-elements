@@ -223,3 +223,39 @@ class Column(Base, default_classes="nicegui-column"):
 
         if wrap:
             self._style["flex-wrap"] = "wrap"
+
+
+class Grid(Base, default_classes="nicegui-grid"):
+    def __init__(
+        self,
+        *,
+        value: list[Any] | None = None,
+        class_obj: type,
+        group: str | None = None,
+        rows: int | str | None = None,
+        columns: int | str | None = None,
+        on_drop: Callable | None = None,
+    ) -> None:
+        """Sortable Grid Element
+
+        Derived from Sortable Base and ui.grid
+
+        Args:
+            class_obj (type): type of class the childrens should be.
+            value (list[Any], optional): list of keyword args for the `class_obj`. Defaults to None.
+            group (str, optional): to group multiple drag drop containers. Defaults to None.
+            rows (int, str, optional): number of rows in the grid or a string with the grid-template-rows CSS property (e.g. 'auto 1fr').
+            columns (int, str, optional): number of columns in the grid or a string with the grid-template-columns CSS property (e.g. 'auto 1fr')
+            on_drop (Callable, optional): callback function on `item-drop`. Defaults to None.
+        """
+        super().__init__(value=value, class_obj=class_obj, group=group, on_drop=on_drop)
+
+        if isinstance(rows, int):
+            self._style["grid-template-rows"] = f"repeat({rows}, minmax(0, 1fr))"
+        elif isinstance(rows, str):
+            self._style["grid-template-rows"] = rows
+
+        if isinstance(columns, int):
+            self._style["grid-template-columns"] = f"repeat({columns}, minmax(0, 1fr))"
+        elif isinstance(columns, str):
+            self._style["grid-template-columns"] = columns
