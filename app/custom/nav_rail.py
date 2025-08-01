@@ -13,6 +13,12 @@ class List(ui.list):
         super().__init__()
         self.classes("w-full")
 
+    def set_active_label(self, current_page: str):
+        for child in self.descendants():
+            if child.tag == "q-item-label":
+                if child._text == current_page:
+                    child.parent_slot.parent.parent_slot.parent.props("active")
+
 
 class Item(ui.item):
     def __init__(
