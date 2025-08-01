@@ -136,8 +136,11 @@ class Base(ValueElement, component="sortable.js", dependencies=["sortable.min.js
             new_index (int): index of the item to insert at.
             obj (dict[str, Any]): keyword args of the item.
         """
+        if new_index < 0:
+            self.value.append(obj)
+        else:
+            self.value.insert(new_index, obj)
 
-        self.value.insert(new_index, obj)
         with self:
             self.class_obj(**obj)
         self.default_slot.children[-1].move(target_index=new_index)
