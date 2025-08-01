@@ -131,6 +131,7 @@ class Base(ValueElement, component="sortable.js", dependencies=["sortable.min.js
 
         Useful to `insert` an item at index via a function.
         You must run `update()` after this to refresh contents.
+        `update()` may not be needed if you append to the last.
 
         Args:
             new_index (int): index of the item to insert at.
