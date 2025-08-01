@@ -210,3 +210,4 @@ __marimo__/
 ## My excludes
 .python-version
 pyrightconfig.json
+.vscode/
