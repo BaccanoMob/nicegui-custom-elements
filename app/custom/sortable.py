@@ -54,6 +54,9 @@ class Base(ValueElement, component="sortable.js", dependencies=["sortable.min.js
     def _handle_on_drop(self, e: GenericEventArguments) -> None:
         """Function to change index of the item dropped to respective lists.
 
+        IMPORTANT: on_drop callback will pass args before change. So the value
+        dropped will be at `e.args['old_list'].value[e.args['old_index']]`
+
         returns
             e.args
             - new_index: int
@@ -61,8 +64,10 @@ class Base(ValueElement, component="sortable.js", dependencies=["sortable.min.js
             - new_list: int => converted to Base class
             - old_list: int => converted to Base class
 
-        Note: `old_list` is the list that emits `item-drop` event.
-        Currently, I have no use for `on_drop` callback but left it if needed in the future.
+        Note:
+            - `old_list` is the list that emits `item-drop` event and is `self` in this function.
+            - `old_list` is not useful in this function but may useful `on_drop` callback.
+            - `old_index` is useful this function but not so much in `on_drop` callback.
         """
         e.args["new_list"] = Base.sortable_list[e.args["new_list"]]
         e.args["old_list"] = Base.sortable_list[e.args["old_list"]]
