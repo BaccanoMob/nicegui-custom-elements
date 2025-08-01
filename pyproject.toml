@@ -1,0 +1,9 @@
+[project]
+name = "nicegui-custom-elements"
+version = "0.1.0"
+description = "Some nicegui custom elements to make ui.page clutter free (to some extent)."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "nicegui>=2.22.0",
+]
