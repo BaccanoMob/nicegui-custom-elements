@@ -2,6 +2,7 @@ import "sortable"; // imports from `sortable.min.js`
 
 // Alternatively, you can use below to get JS module at runtime
 // import 'https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.6/Sortable.min.js'
+// and remove as dependency in sortable.py file
 
 export default {
     template: `
