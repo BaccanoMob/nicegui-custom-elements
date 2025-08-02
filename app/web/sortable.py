@@ -274,22 +274,27 @@ class TrelloCard(ui.card):
         parent: sortable.Base = self.parent_slot.parent
         index = parent.default_slot.children.index(self)
         data = parent.pop(index)
-        # ui.notify(f"{data['label']} deleted!!", type="warning")
         n = ui.notification(
             f"{data['label']} deleted!!",
             type="warning",
-            # actions=[
-            #     {
-            #         "label": "Undo",
-            #         ":handler": '() => {emitEvent("undo")}',
-            #     }
-            # ],
         )
 
-        # ui.on("undo", undo)
+        n._props["options"].setdefault("actions", [])
+        action = {
+            "label": "undo",
+            "color": "primary",
+            ":handler": f'() => getElement({n.id}).$emit("undo")',
+        }
+        n._props["options"]["actions"].append(action)
 
         # https://github.com/zauberzeug/nicegui/pull/4819
         # TODO: add action button to notification
+        # n = ui.notification(
+        #     f"{data['label']} deleted!!",
+        #     type="warning",
+        # )
+        # n.add_action("undo", text="Undo")
+        n.on("undo", undo)
 
 
 class TrelloColumn(ui.card):
