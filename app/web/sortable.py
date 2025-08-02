@@ -161,11 +161,18 @@ def sortable_refresh():
             ui.label("sort2")
             sort2 = sortable.Row(value=list2.value, class_obj=Custom, group="a")
 
+    def update_list():
+        list1.replace([{"label": str(i)} for i in range(5)])
+        lists.refresh()
+
     list1 = ListBind([{"label": str(i)} for i in range(3)])
     lists()
     ui.button("Reset", on_click=lists.refresh)
     ui.label("Demostrates the difference in global/local scoped lists.")
     ui.label("Reset only affects sort2 because list2 was defined inside refreshable.")
+
+    ui.button("Update list1", on_click=update_list)
+    ui.label("Updating directly the list requires refresh.")
 
 
 @router.page("/groups")
