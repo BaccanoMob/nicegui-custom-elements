@@ -1,10 +1,16 @@
-from typing import Any, Callable, Literal, Self
+from typing import Any, Callable, Literal, Self, override
 
+from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
 from nicegui.events import GenericEventArguments
 
 
-class Base(ValueElement, component="sortable.js", dependencies=["sortable.min.js"]):
+class Base(
+    ValueElement,
+    DisableableElement,
+    component="sortable.js",
+    dependencies=["sortable.min.js"],
+):
     sortable_list: dict[int, Self] = {}
 
     def __init__(
@@ -50,6 +56,11 @@ class Base(ValueElement, component="sortable.js", dependencies=["sortable.min.js
         with self:
             for val in self.value:
                 self.class_obj(**val)
+
+    @override
+    def _handle_enabled_change(self, enabled: bool) -> None:
+        self.run_method("setDisabled", not enabled)
+        return super()._handle_enabled_change(enabled)
 
     def _handle_on_drop(self, e: GenericEventArguments) -> None:
         """Function to change index of the item dropped to respective lists.

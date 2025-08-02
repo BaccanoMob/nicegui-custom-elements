@@ -91,6 +91,8 @@ def draw():
 def sortable_example():
     ui.button("elements").on_click(lambda: ui.navigate.to(sortable_elements))
     ui.button("updates").on_click(lambda: ui.navigate.to(sortable_updates))
+    ui.button("disabled").on_click(lambda: ui.navigate.to(sortable_disabled))
+    ui.button("refresh").on_click(lambda: ui.navigate.to(sortable_refresh))
     ui.button("groups").on_click(lambda: ui.navigate.to(sortable_group))
     ui.button("dropzone").on_click(lambda: ui.navigate.to(sortable_dropzone))
     ui.button("all").on_click(lambda: ui.navigate.to(sortable_all))
@@ -146,6 +148,25 @@ def sortable_updates():
         ui.button("insert", on_click=insert).tooltip(
             "Add a random number to start of list"
         )
+
+
+@router.page("/disabled")
+def sortable_disabled():
+    def set_disabled():
+        sort1.disable()
+
+    def set_enabled():
+        sort1.enable()
+
+    list1 = ListBind([{"label": str(i)} for i in range(5)])
+
+    with ui.card():
+        ui.label("sort1")
+        sort1 = sortable.Row(value=list1.value, class_obj=Custom, group="a")
+
+    with ui.row():
+        ui.button("Disable").on_click(set_disabled)
+        ui.button("Enable").on_click(set_enabled)
 
 
 @router.page("/refresh")
