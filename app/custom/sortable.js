@@ -24,7 +24,8 @@ export default {
             Sortable.create(this.$el, {
                 group: this.group,
                 animation: 150,
-               // Using a handle would more secure as only elements with the class drop_handle can be moved.
+                // disabled: true, // For future reference to know that this can be disable like this
+                // Using a handle would more secure as only elements with the class drop_handle can be moved.
                 // handle: ".drop_handle",
                 ghostClass: 'opacity-50',
                 onEnd: (evt) => this.$emit("item-drop", {
