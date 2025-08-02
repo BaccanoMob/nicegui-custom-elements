@@ -5,7 +5,7 @@ from nicegui import APIRouter, ui
 from app.custom import sortable
 from app.custom.binds import ListBind
 
-router = APIRouter(prefix="/examples")
+router = APIRouter(prefix="/sortable")
 
 
 class Custom(ui.card):
@@ -87,9 +87,107 @@ def draw():
             ui.button("reset").on_click(draw.refresh)
 
 
-@router.page("/sortable")
+@router.page("/")
 def sortable_example():
+    ui.button("elements").on_click(lambda: ui.navigate.to(sortable_elements))
+    ui.button("updates").on_click(lambda: ui.navigate.to(sortable_updates))
+    ui.button("groups").on_click(lambda: ui.navigate.to(sortable_group))
+    ui.button("dropzone").on_click(lambda: ui.navigate.to(sortable_dropzone))
+    ui.button("all").on_click(lambda: ui.navigate.to(sortable_all))
+    ui.button("trello_cards").on_click(lambda: ui.navigate.to(trello_example))
+
+
+@router.page("/all")
+def sortable_all():
     draw()
+
+
+@router.page("/elements")
+def sortable_elements():
+    list1 = ListBind([{"label": str(i)} for i in range(20, 24)])
+    list2 = ListBind([{"label": str(i)} for i in range(30, 36)])
+    list3 = ListBind([{"label": str(i)} for i in range(0, 15)])
+
+    with ui.row():
+        with ui.card():
+            ui.label("Row").classes("text-center w-full")
+            sortable.Row(value=list1.value, class_obj=Custom, group="a")
+
+        with ui.card():
+            ui.label("Column").classes("text-center w-full")
+            sortable.Column(value=list2.value, class_obj=Custom, group="a")
+
+        with ui.card():
+            ui.label("Grid").classes("text-center w-full")
+            sortable.Grid(value=list3.value, class_obj=Custom, group="a", columns=4)
+
+
+@router.page("/updates")
+def sortable_updates():
+    def pop():
+        try:
+            sort1.pop(0)
+            sort1.update()
+        except Exception as e:
+            ui.notify(str(e))
+
+    def insert():
+        sort1.insert(0, {"label": f"{random.randint(0, 100)}"})
+        sort1.update()
+
+    list1 = ListBind([{"label": str(i)} for i in range(3)])
+
+    with ui.card():
+        ui.label("sort1")
+        sort1 = sortable.Row(value=list1.value, class_obj=Custom, group="a")
+
+    with ui.row():
+        ui.button("pop", on_click=pop).tooltip("Pop first element of list")
+        ui.button("insert", on_click=insert).tooltip(
+            "Add a random number to start of list"
+        )
+
+
+@router.page("/groups")
+def sortable_group():
+    list1 = ListBind([{"label": str(i)} for i in range(3)])
+    list2 = ListBind([{"label": str(i)} for i in range(20, 24)])
+    with ui.card():
+        ui.label("sort1")
+        sortable.Row(value=list1.value, class_obj=Custom, group="a")
+
+    with ui.card():
+        ui.label("sort1")
+        sortable.Row(value=list2.value, class_obj=Custom, group="a")
+
+
+@router.page("/dropzone")
+def sortable_dropzone():
+    list1 = ListBind([{"label": str(i)} for i in range(10)])
+    list2 = ListBind()
+    with ui.card():
+        sortable.Row(value=list1.value, class_obj=Custom, group="a")
+
+    with ui.card().classes("min-w-32 h-fit min-h-24 bg-blue-200"):
+        ui.label("Drop Here")
+        sortable.Row(
+            value=list2.value,
+            class_obj=Custom,
+            group="a",
+        ).classes("w-full h-fit min-h-12 p-2 bg-blue-100 rounded")
+
+    with ui.card().classes("min-w-32 h-fit min-h-24 bg-blue-200"):
+        ui.label("Drop here?")
+        sortable.Row(
+            value=list2.value,
+            class_obj=Custom,
+            group="a",
+        ).classes("border-[2px]")
+    with ui.label("Good luck dropping above!"):
+        ui.label(
+            "It's possible but without elements the size of container is really small"
+        )
+        ui.label("Try the left most spot (marked with a border)")
 
 
 class TrelloCard(ui.card):
@@ -101,14 +199,29 @@ class TrelloCard(ui.card):
                 ui.menu_item("Delete", on_click=self._delete_card)
 
     def _delete_card(self):
-        data = self.parent_slot.parent.pop(
-            self.parent_slot.parent.default_slot.children.index(self)
+        def undo():
+            parent.insert(index, data)
+            parent.update()
+
+        parent: sortable.Base = self.parent_slot.parent
+        index = parent.default_slot.children.index(self)
+        data = parent.pop(index)
+        # ui.notify(f"{data['label']} deleted!!", type="warning")
+        n = ui.notification(
+            f"{data['label']} deleted!!",
+            type="warning",
+            # actions=[
+            #     {
+            #         "label": "Undo",
+            #         ":handler": '() => {emitEvent("undo")}',
+            #     }
+            # ],
         )
-        ui.notify(f"{data['label']} deleted!!", type="warning")
 
+        # ui.on("undo", undo)
 
-# https://github.com/zauberzeug/nicegui/pull/4819
-# TODO: add action button to notification
+        # https://github.com/zauberzeug/nicegui/pull/4819
+        # TODO: add action button to notification
 
 
 class TrelloColumn(ui.card):
