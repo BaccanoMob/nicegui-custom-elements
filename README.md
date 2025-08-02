@@ -20,7 +20,17 @@ I decided to change the repo from being just a collection of elements to a niceg
 
 Currently only sortable example is added and others would follow if I get the time.
 
-### Features
+### Some notes
+
+#### Secure session cookies
+
+There are two flags with cookies, `HttpOnly` and `Secure`. By default, nicegui does not use the secure flag. Note that secure flag denotes the cookie is only sent over via HTTPS connections. If the connection is uses http connection like `http://localhost:8080`, the cookie is not sent.
+
+You can check the flags via Dev Tools > Application > Cookies.
+
+To enable `secure` flag, you will need to add session middleware with the same secret as in `ui.run` (Check [main.py](main2.py)) or `ui.run_with`.
+
+This step is really important if you are creating your own app and publishing on the internet. Otherwise not so much.
 
 #### Sortable
 

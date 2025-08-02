@@ -1,6 +1,12 @@
 from nicegui import app, ui
+from starlette.middleware.sessions import SessionMiddleware
 
 from app.web import sortable
+
+## METHOD TO ADD SECURE SESSION COOKIES
+app.add_middleware(
+    SessionMiddleware, secret_key="my_secret", same_site="strict", https_only=True
+)
 
 ## Adding routers
 app.include_router(sortable.router)
