@@ -193,10 +193,30 @@ def sortable_dropzone():
 class TrelloCard(ui.card):
     def __init__(self, *, label: str) -> None:
         super().__init__(align_items=None)
+        self.label: str = label
         with self.classes("w-full"):
             ui.label(label)
             with ui.context_menu():
+                ui.menu_item("Edit", on_click=self._edit_card, auto_close=False)
+                # auto close should be false for dialog to show
+                ui.separator()
                 ui.menu_item("Delete", on_click=self._delete_card)
+
+    def _edit_card(self):
+        def _update_label():
+            dialog.close()
+            parent: sortable.Base = self.parent_slot.parent
+            index = parent.default_slot.children.index(self)
+            data = parent.pop(index)
+            data.update({"label": label.value})
+            parent.insert(index, data)
+
+        with ui.dialog() as dialog:
+            with ui.card():
+                label = ui.input("Label", value=self.label).props("autofocus")
+                label.on("keyup.enter", _update_label)
+        dialog.open()
+        # data = parent.pop(index)
 
     def _delete_card(self):
         def undo():
