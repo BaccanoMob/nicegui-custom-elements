@@ -1,15 +1,31 @@
 from dataclasses import field
-from typing import Any
+from typing import Any, Generic, TypeVar
 
 from nicegui import binding
 
-# Some generic dataclass binds
+T = TypeVar("T")
+
+
+@binding.bindable_dataclass
+class ListBind(Generic[T]):
+    value: list[T] = field(default_factory=list)
+
+    def replace(self, new_list: list[Any]):
+        self.value = new_list
+
+    def append(self, element: Any):
+        self.value.append(element)
+
+    def clear(self):
+        self.value = []
+
 
 @binding.bindable_dataclass
 class TextBind:
     text: str | None
 
     def __init__(self, text: str | None = None) -> None:
+        super.__init__()
         self.text = text
 
     def update(self, new_text: str) -> None:
@@ -21,6 +37,7 @@ class ProgressBind:
     value: float
 
     def __init__(self, value: float = -1) -> None:
+        super.__init__()
         if value > 1:
             self.value = 1
         elif value < 0:
@@ -40,6 +57,7 @@ class BoolBind:
     value: bool
 
     def __init__(self, value: bool = False) -> None:
+        super.__init__()
         self.value = value
 
     def toggle(self) -> None:
@@ -50,17 +68,3 @@ class BoolBind:
 
     def off(self) -> None:
         self.value = False
-
-
-@binding.bindable_dataclass
-class ListBind:
-    value: list[Any] = field(default_factory=list)
-
-    def replace(self, new_value: list[Any]):
-        self.value = new_value
-
-    def append(self, element: Any):
-        self.value.append(element)
-
-    def clear(self):
-        self.value = []
