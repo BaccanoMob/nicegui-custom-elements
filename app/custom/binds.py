@@ -10,13 +10,13 @@ T = TypeVar("T")
 class ListBind(Generic[T]):
     value: list[T] = field(default_factory=list)
 
-    def replace(self, new_list: list[Any]):
+    def replace(self, new_list: list[T]):
         self.value = new_list
 
-    def append(self, element: Any):
+    def append(self, element: T):
         self.value = self.value + [element]
 
-    def extend(self, elements: list[Any]):
+    def extend(self, elements: list[T]):
         self.value = self.value + elements
 
     def clear(self):
