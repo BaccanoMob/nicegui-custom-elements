@@ -16,7 +16,7 @@ class Base(
     def __init__(
         self,
         *,
-        value: list[Any] | None = None,
+        value: list[dict[str, Any]] | None = None,
         class_obj: type,
         group: str | None = None,
         on_drop: Callable | None = None,
@@ -61,6 +61,10 @@ class Base(
     def _handle_enabled_change(self, enabled: bool) -> None:
         self.run_method("setDisabled", not enabled)
         return super()._handle_enabled_change(enabled)
+
+    @override
+    def _value_to_model_value(self, value: Any):
+        return None
 
     def _handle_on_drop(self, e: GenericEventArguments) -> None:
         """Function to change index of the item dropped to respective lists.
@@ -156,6 +160,13 @@ class Base(
         with self:
             self.class_obj(**obj)
         self.default_slot.children[-1].move(target_index=new_index)
+
+    def build_list(self):
+        """Create children based on value."""
+        self.clear()
+        with self:
+            for val in self.value:
+                self.class_obj(**val)
 
 
 class Row(Base, default_classes="nicegui-row"):
