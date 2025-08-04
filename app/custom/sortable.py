@@ -39,7 +39,12 @@ class Base(
             group (str, optional): to group multiple drag drop containers. Defaults to None.
             on_drop (Callable, optional): callback function on `item-drop`. Defaults to None.
         """
+        self.class_obj: type = class_obj
+
         super().__init__(value=None, on_value_change=None, throttle=0)
+
+        self._props["group"] = group
+
         if value is not None:
             self.value: list[dict[str, Any]] = value
         else:
@@ -48,19 +53,17 @@ class Base(
         self.on("item-drop", self._handle_on_drop)
         self.on_drop: Callable | None = on_drop
 
-        self.class_obj: type = class_obj
-        self._props["group"] = group
-
         Base.sortable_list[self.id] = self
-
-        with self:
-            for val in self.value:
-                self.class_obj(**val)
 
     @override
     def _handle_enabled_change(self, enabled: bool) -> None:
         self.run_method("setDisabled", not enabled)
         return super()._handle_enabled_change(enabled)
+
+    @override
+    def _handle_value_change(self, value: Any) -> None:
+        self.build_list()
+        return super()._handle_value_change(value)
 
     @override
     def _value_to_model_value(self, value: Any):
@@ -164,9 +167,10 @@ class Base(
     def build_list(self):
         """Create children based on value."""
         self.clear()
-        with self:
-            for val in self.value:
-                self.class_obj(**val)
+        if self.value is not None:
+            with self:
+                for val in self.value:
+                    self.class_obj(**val)
 
 
 class Row(Base, default_classes="nicegui-row"):
