@@ -14,7 +14,10 @@ class ListBind(Generic[T]):
         self.value = new_list
 
     def append(self, element: Any):
-        self.value.append(element)
+        self.value = self.value + [element]
+
+    def extend(self, elements: list[Any]):
+        self.value = self.value + elements
 
     def clear(self):
         self.value = []
