@@ -1,9 +1,10 @@
 from nicegui import app, ui
 
-from app.web import sortable
+from app.web import sortable, table
 
 ## Adding routers
 app.include_router(sortable.router)
+app.include_router(table.router)
 
 
 @ui.page("/")
