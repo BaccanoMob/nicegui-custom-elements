@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from dataclasses import asdict, dataclass
 from typing import Any, Callable, Literal
 
 from nicegui import events, ui
@@ -9,7 +10,21 @@ from nicegui.events import (
 )
 
 
+@dataclass
+class PageArgs:
+    offset: int = 0
+    limit: int = 100
+    sort_by: str | None = None
+    descending: bool = False
+    filter: str = ""
+
+    def as_kwargs(self):
+        return asdict(self)
+
+
 class Table(ui.table):
+    fetch_rows_and_count: Callable[[PageArgs], tuple[list[dict[str, Any]], int]]
+
     def __init__(
         self,
         *,
@@ -21,9 +36,7 @@ class Table(ui.table):
         on_select: Handler[TableSelectionEventArguments] | None = None,
         on_pagination_change: Handler[ValueChangeEventArguments] | None = None,
         pagination: int | dict = 10,
-        fetch_rows_and_count: Callable[
-            [int, int, str], tuple[list[dict[str, Any]], int]
-        ],
+        fetch_rows_and_count: Callable[[PageArgs], tuple[list[dict[str, Any]], int]],
     ) -> None:
         """Server side pagination table
 
@@ -31,15 +44,19 @@ class Table(ui.table):
 
         While, the above comment showed with refreshables, it is possible without it as well (like with this element).
 
-        Requires `fetch_rows_and_count` function to work.
-        `fetch_rows_and_count` requires 3 args: limit (int), offset (int) and filter (str).
+        Requires `fetch_rows_and_count` function to work. It requires 1 args: PageArgs (dataclass).
+            - `limit` and `offset` for limiting rows.
+            - `sort_by` and `descending` for sorting.
+            - `filter` for filtering.
+
         It should return a list of rows (list[dict[str, Any]]) and the total rows (int).
+        But it is optional to sort/filter and it can be ignored if you do not use the feature.
 
-        `pagination` is modified from ui.table to required parameter with default value as 10.
-        `pagination` as None is removed since it disables pagination feature.
+        `pagination` arg is modified from ui.table to required parameter with default value as 10.
+        None was removed since it disables pagination feature (pointless to disable for server side pagination).
 
-        `pagination` as 0 must be configured in `fetch_rows_and_count` to get all rows.
         Records per page dropdown option `All` in pagination equals 0.
+        `pagination` as 0 must be configured in `fetch_rows_and_count` to get all rows.
         If not configured, you will get `No data available` in the table (as rows is empty with limit 0).
 
         Args:
@@ -56,10 +73,12 @@ class Table(ui.table):
         self.fetch_rows_and_count = fetch_rows_and_count
 
         rows, total = fetch_rows_and_count(
-            limit=pagination["rowsPerPage"]
-            if isinstance(pagination, dict)
-            else pagination,
-            offset=0,
+            PageArgs(
+                limit=pagination["rowsPerPage"]
+                if isinstance(pagination, dict)
+                else pagination,
+                offset=0,
+            )
         )
         super().__init__(
             rows=rows,
@@ -73,6 +92,7 @@ class Table(ui.table):
             on_pagination_change=on_pagination_change,
         )
 
+        self.props("binary-state-sort")
         self.filter: str = ""
         self.props["pagination"]["rowsNumber"] = total
         self.on("request", self.do_server_side_pagination)
@@ -83,7 +103,15 @@ class Table(ui.table):
 
         limit = int(new_pagination.get("rowsPerPage"))
         offset = (int(new_pagination.get("page")) - 1) * limit
-        rows, total = self.fetch_rows_and_count(limit, offset, self.filter)
+        rows, total = self.fetch_rows_and_count(
+            PageArgs(
+                offset=offset,
+                limit=limit,
+                sort_by=new_pagination["sortBy"],
+                descending=new_pagination["descending"],
+                filter=self.filter,
+            )
+        )
 
         new_pagination["rowsNumber"] = total
         self.props["pagination"].update(new_pagination)
